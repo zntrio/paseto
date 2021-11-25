@@ -58,7 +58,7 @@ jobs:
         with:
           gotestsum_version: 1.7.0
       - name: Run tests
-        run: gotestsum --format short-verbose ./pkg/...
+        run: gotestsum --format short-verbose ./...
 
   tests-on-macos:
     needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
@@ -80,7 +80,7 @@ jobs:
         with:
           gotestsum_version: 1.7.0
       - name: Run tests
-        run: gotestsum --format short-verbose ./pkg/...
+        run: gotestsum --format short-verbose ./...
 
   tests-on-unix:
     needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
@@ -102,4 +102,4 @@ jobs:
         with:
           gotestsum_version: 1.7.0
       - name: Run tests
-        run: gotestsum --format short-verbose ./pkg/...
+        run: gotestsum --format short-verbose ./...

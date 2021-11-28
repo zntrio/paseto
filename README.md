@@ -40,6 +40,22 @@ func main () {
 
 More examples - [here](example_test.go)
 
+## Benchmarks
+
+```sh
+$ go test -bench=. -test.benchtime=1s
+goos: darwin
+goarch: amd64
+pkg: zntr.io/paseto/v4
+cpu: Intel(R) Core(TM) i9-9980HK CPU @ 2.40GHz
+Benchmark_Paseto_Encrypt-16    	  317936	      3437 ns/op	    3536 B/op	      29 allocs/op
+Benchmark_Paseto_Decrypt-16    	  459136	      2484 ns/op	    2448 B/op	      22 allocs/op
+Benchmark_Paseto_Sign-16       	   51328	     23316 ns/op	    1672 B/op	      18 allocs/op
+Benchmark_Paseto_Verify-16     	   22741	     52872 ns/op	     744 B/op	      13 allocs/op
+PASS
+ok  	zntr.io/paseto/v4	5.624s
+```
+
 ## License
 
 All artifacts and source code is released under [Apache 2.0 Software License](LICENSE).

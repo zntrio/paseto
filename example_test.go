@@ -30,7 +30,7 @@ func ExamplePasetoV4LocalWithoutFooter() {
 	deterministicSeedForTest := bytes.NewReader([]byte("deterministic-random-source-for-tests-1234567890123456789012345678901234567890"))
 
 	// Generate an encryption key.
-	localKey, err := pasetov4.GenerateKey(deterministicSeedForTest)
+	localKey, err := pasetov4.GenerateLocalKey(deterministicSeedForTest)
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +53,7 @@ func ExamplePasetoV4LocalWithFooter() {
 	deterministicSeedForTest := bytes.NewReader([]byte("deterministic-random-source-for-tests-1234567890123456789012345678901234567890"))
 
 	// Generate an encryption key.
-	localKey, err := pasetov4.GenerateKey(deterministicSeedForTest)
+	localKey, err := pasetov4.GenerateLocalKey(deterministicSeedForTest)
 	if err != nil {
 		panic(err)
 	}
@@ -80,7 +80,7 @@ func ExamplePasetoV4LocalWithFooterAndImplicitAssertions() {
 	deterministicSeedForTest := bytes.NewReader([]byte("deterministic-random-source-for-tests-1234567890123456789012345678901234567890"))
 
 	// Generate an encryption key.
-	localKey, err := pasetov4.GenerateKey(deterministicSeedForTest)
+	localKey, err := pasetov4.GenerateLocalKey(deterministicSeedForTest)
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +108,7 @@ func ExamplePasetoV4LocalDecrypt() {
 	deterministicSeedForTest := bytes.NewReader([]byte("deterministic-random-source-for-tests-1234567890123456789012345678901234567890"))
 
 	// Generate an encryption key.
-	localKey, err := pasetov4.GenerateKey(deterministicSeedForTest)
+	localKey, err := pasetov4.GenerateLocalKey(deterministicSeedForTest)
 	if err != nil {
 		panic(err)
 	}

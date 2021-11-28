@@ -21,14 +21,20 @@ import (
 	"bytes"
 	"crypto/subtle"
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"golang.org/x/crypto/blake2b"
 )
 
-func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
+func kdf(key *LocalKey, n []byte) (ek, n2, ak []byte, err error) {
+	// Check arguments
+	if key == nil {
+		return nil, nil, nil, errors.New("unable to derive keys from a nil seed")
+	}
+
 	// Derive encryption key
-	encKDF, err := blake2b.New(encryptionKDFLength, key)
+	encKDF, err := blake2b.New(encryptionKDFLength, key[:])
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("unable to initialize encryption kdf: %w", err)
 	}
@@ -43,7 +49,7 @@ func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 	n2 = tmp[KeyLength:]
 
 	// Derive authentication key
-	authKDF, err := blake2b.New(authenticationKeyLength, key)
+	authKDF, err := blake2b.New(authenticationKeyLength, key[:])
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("unable to initialize authentication kdf: %w", err)
 	}

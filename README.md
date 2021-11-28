@@ -22,7 +22,7 @@ import (
 
 func main () {
 	// Generate an encryption key.
-	localKey, err := pasetov4.GenerateKey(rand.Reader)
+	localKey, err := pasetov4.GenerateLocalKey(rand.Reader)
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +58,7 @@ ok  	zntr.io/paseto/v4	5.624s
 
 ## License
 
-All artifacts and source code is released under [Apache 2.0 Software License](LICENSE).
+All artifacts and source code are released under [Apache 2.0 Software License](LICENSE).
 
 ## Reference(s)
 

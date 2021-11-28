@@ -30,3 +30,6 @@ const (
 	v4LocalPrefix           = "v4.local."
 	v4PublicPrefix          = "v4.public."
 )
+
+// LocalKey represents a key for symetric encryption (local).
+type LocalKey [32]byte

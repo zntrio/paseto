@@ -135,8 +135,12 @@ func Test_Paseto_LocalVector(t *testing.T) {
 		testCase := tc
 		t.Run(testCase.name, func(t *testing.T) {
 			// Decode input
-			key, err := hex.DecodeString(testCase.key)
+			keyRaw := [32]byte{}
+			_, err := hex.Decode(keyRaw[:], []byte(testCase.key))
 			assert.NoError(t, err)
+			key, err := LocalKeyFromSeed(keyRaw[:])
+			assert.NoError(t, err)
+
 			n, err := hex.DecodeString(testCase.nonce)
 			assert.NoError(t, err)
 
@@ -160,7 +164,10 @@ func Test_Paseto_LocalVector(t *testing.T) {
 }
 
 func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
-	key, err := hex.DecodeString("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f")
+	keyRaw := [32]byte{}
+	_, err := hex.Decode(keyRaw[:], []byte("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f"))
+	assert.NoError(t, err)
+	key, err := LocalKeyFromSeed(keyRaw[:])
 	assert.NoError(t, err)
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
@@ -184,7 +191,7 @@ func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
 
 // -----------------------------------------------------------------------------
 
-func benchmarkEncrypt(key, m []byte, f, i string, b *testing.B) {
+func benchmarkEncrypt(key *LocalKey, m []byte, f, i string, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Encrypt(rand.Reader, key, m, f, i)
 		if err != nil {
@@ -194,8 +201,10 @@ func benchmarkEncrypt(key, m []byte, f, i string, b *testing.B) {
 }
 
 func Benchmark_Paseto_Encrypt(b *testing.B) {
-	key, err := hex.DecodeString("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f")
+	keyRaw := [32]byte{}
+	_, err := hex.Decode(keyRaw[:], []byte("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f"))
 	assert.NoError(b, err)
+	key := LocalKey(keyRaw)
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
 	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
@@ -204,10 +213,10 @@ func Benchmark_Paseto_Encrypt(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	benchmarkEncrypt(key, m, f, i, b)
+	benchmarkEncrypt(&key, m, f, i, b)
 }
 
-func benchmarkDecrypt(key, m []byte, f, i string, b *testing.B) {
+func benchmarkDecrypt(key *LocalKey, m []byte, f, i string, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Decrypt(key, m, f, i)
 		if err != nil {
@@ -217,8 +226,10 @@ func benchmarkDecrypt(key, m []byte, f, i string, b *testing.B) {
 }
 
 func Benchmark_Paseto_Decrypt(b *testing.B) {
-	key, err := hex.DecodeString("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f")
+	keyRaw := [32]byte{}
+	_, err := hex.Decode(keyRaw[:], []byte("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f"))
 	assert.NoError(b, err)
+	key := LocalKey(keyRaw)
 
 	m := []byte("v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t5uvqQbMGlLLNYBc7A6_x7oqnpUK5WLvj24eE4DVPDZjw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9")
 	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
@@ -227,5 +238,5 @@ func Benchmark_Paseto_Decrypt(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	benchmarkDecrypt(key, m, f, i, b)
+	benchmarkDecrypt(&key, m, f, i, b)
 }

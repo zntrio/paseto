@@ -27,21 +27,39 @@ import (
 	"golang.org/x/crypto/chacha20"
 )
 
-// GenerateKey generates a key for local encryption.
-func GenerateKey(r io.Reader) ([]byte, error) {
-	var key [KeyLength]byte
+// GenerateLocalKey generates a key for local encryption.
+func GenerateLocalKey(r io.Reader) (*LocalKey, error) {
+	var key LocalKey
 	if _, err := io.ReadFull(r, key[:]); err != nil {
 		return nil, fmt.Errorf("paseto: unable to generate a random key: %w", err)
 	}
 
 	// No error
-	return key[:], nil
+	return &key, nil
+}
+
+// LocalKeyFromSeed creates a local key from given input data.
+func LocalKeyFromSeed(seed []byte) (*LocalKey, error) {
+	// Check minimum seed size.
+	if len(seed) < KeyLength {
+		return nil, fmt.Errorf("paseto: invalid seed length, it must be %d bytes long at least", KeyLength)
+	}
+
+	// Copy data from seed.
+	var key LocalKey
+	copy(key[:], seed[:KeyLength])
+
+	// No error
+	return &key, nil
 }
 
 // PASETO v4 symmetric encryption primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#encrypt
-func Encrypt(r io.Reader, key, m []byte, f, i string) ([]byte, error) {
+func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) {
 	// Check arguments
+	if key == nil {
+		return nil, errors.New("paseto: key is nil")
+	}
 	if len(key) != KeyLength {
 		return nil, fmt.Errorf("paseto: invalid key length, it must be %d bytes long", KeyLength)
 	}
@@ -101,7 +119,7 @@ func Encrypt(r io.Reader, key, m []byte, f, i string) ([]byte, error) {
 
 // PASETO v4 symmetric decryption primitive
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#decrypt
-func Decrypt(key, input []byte, f, i string) ([]byte, error) {
+func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
 	// Check arguments
 	if key == nil {
 		return nil, errors.New("paseto: key is nil")

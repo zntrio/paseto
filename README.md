@@ -2,7 +2,8 @@
 
 This go library exposed as `zntr.io/paseto` provides :
 
-* `v4` - `local` and `public` implementation of [PASETO Version 4 specification](https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md). 
+* `v3` - NIST compliant PASETO : `HKDF-HMAC-SH384` / `AES-CTR` / `HMAC-SHA384` / `ECDSA with RFC6979` (deterministic signatures) - [PASETO Version 3 specification](https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md)
+* `v4` - `BLAKE2B` / `XCHACHA20` / `Ed25519` - [PASETO Version 4 specification](https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md)
 
 > This is used in my OIDC framework [SolID](https://github.com/zntrio/solid).
 
@@ -41,6 +42,24 @@ func main () {
 More examples - [here](example_test.go)
 
 ## Benchmarks
+
+### V3
+
+```sh
+$ go test -bench=. -test.benchtime=1s
+goos: darwin
+goarch: amd64
+pkg: zntr.io/paseto/v3
+cpu: Intel(R) Core(TM) i9-9980HK CPU @ 2.40GHz
+Benchmark_Paseto_Encrypt-16    	   95533	     12378 ns/op	    9616 B/op	      78 allocs/op
+Benchmark_Paseto_Decrypt-16    	  108386	     11064 ns/op	    8488 B/op	      71 allocs/op
+Benchmark_Paseto_Sign-16       	     360	   3370568 ns/op	 1718026 B/op	   14190 allocs/op
+Benchmark_Paseto_Verify-16     	     186	   6457398 ns/op	 3476564 B/op	   28712 allocs/op
+PASS
+ok  	zntr.io/paseto/v3	6.361s
+```
+
+### V4
 
 ```sh
 $ go test -bench=. -test.benchtime=1s

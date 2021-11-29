@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package v4
+package v3
 
 const (
 	// KeyLength is the requested encryption key size.
@@ -23,12 +23,12 @@ const (
 )
 
 const (
-	nonceLength             = 32
-	macLength               = 32
-	encryptionKDFLength     = 56
-	authenticationKeyLength = 32
-	LocalPrefix             = "v4.local."
-	PublicPrefix            = "v4.public."
+	nonceLength     = 32
+	macLength       = 48
+	kdfOutputLength = 48
+	signatureSize   = 96
+	LocalPrefix     = "v3.local."
+	PublicPrefix    = "v3.public."
 )
 
 // LocalKey represents a key for symetric encryption (local).

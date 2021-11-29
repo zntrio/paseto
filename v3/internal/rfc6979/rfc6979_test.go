@@ -17,6 +17,8 @@
 
 package rfc6979
 
+// From https://github.com/codahale/rfc6979
+
 import (
 	"crypto/sha256"
 	"encoding/hex"

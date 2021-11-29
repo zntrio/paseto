@@ -17,6 +17,8 @@
 
 package rfc6979
 
+// From https://github.com/codahale/rfc6979
+
 import (
 	"bytes"
 	"crypto/hmac"
@@ -25,11 +27,11 @@ import (
 )
 
 // https://tools.ietf.org/html/rfc6979#section-3.2
-func generateSecret(q, x *big.Int, alg func() hash.Hash, hash []byte, test func(*big.Int) bool) {
+func generateSecret(q, x *big.Int, alg func() hash.Hash, digest []byte, test func(*big.Int) bool) {
 	qlen := q.BitLen()
 	holen := alg().Size()
 	rolen := (qlen + 7) >> 3
-	bx := append(int2octets(x, rolen), bits2octets(hash, q, qlen, rolen)...)
+	bx := append(int2octets(x, rolen), bits2octets(digest, q, qlen, rolen)...)
 
 	// Step B
 	v := bytes.Repeat([]byte{0x01}, holen)

@@ -44,7 +44,7 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i string) ([]byte, error) {
 	pk := elliptic.MarshalCompressed(elliptic.P384(), sk.X, sk.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(pk), []byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, []byte(f), []byte(i))
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to prepare protected content: %w", err)
 	}
@@ -134,7 +134,7 @@ func Verify(sm []byte, pub *ecdsa.PublicKey, f, i string) ([]byte, error) {
 	pk := elliptic.MarshalCompressed(elliptic.P384(), pub.X, pub.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(pk), []byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, []byte(f), []byte(i))
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
 	}

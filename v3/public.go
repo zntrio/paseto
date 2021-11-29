@@ -15,30 +15,48 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package v4
+package v3
 
 import (
 	"bytes"
-	"crypto/ed25519"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/sha512"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math/big"
 
 	"zntr.io/paseto/internal/common"
+	"zntr.io/paseto/v3/internal/rfc6979"
 )
 
 // Sign a message (m) with the private key (sk).
-// PASETO v4 public signature primitive.
-// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#sign
-func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
-	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, []byte(f), []byte(i))
-	if err != nil {
-		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
+// PASETO v3 public signature primitive.
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#sign
+func Sign(m []byte, sk *ecdsa.PrivateKey, f, i string) ([]byte, error) {
+	// Check arguments
+	if sk == nil {
+		return nil, errors.New("paseto: unable to sign with a nil private key")
 	}
 
-	// Sign protected content
-	sig := ed25519.Sign(sk, m2)
+	// Compress public key point
+	pk := elliptic.MarshalCompressed(elliptic.P384(), sk.X, sk.Y)
+
+	// Compute protected content
+	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, []byte(f), []byte(i))
+	if err != nil {
+		return nil, fmt.Errorf("paseto: unable to prepare protected content: %w", err)
+	}
+
+	// Compute SHA-384 digest
+	digest := sha512.Sum384(m2)
+
+	// Sign using a determistic ECDSA scheme
+	r, s := rfc6979.SignECDSA(sk, digest[:], sha512.New384)
+
+	// Assemble signature
+	sig := append(r.Bytes(), s.Bytes()...)
 
 	// Prepare content
 	body := append([]byte{}, m...)
@@ -63,9 +81,14 @@ func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 	return final, nil
 }
 
-// PASETO v4 signature verification primitive.
-// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#verify
-func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
+// PASETO v3 signature verification primitive.
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#verify
+func Verify(sm []byte, pub *ecdsa.PublicKey, f, i string) ([]byte, error) {
+	// Check arguments
+	if pub == nil {
+		return nil, errors.New("paseto: public key is nil")
+	}
+
 	// Check token header
 	if !bytes.HasPrefix(sm, []byte(PublicPrefix)) {
 		return nil, errors.New("paseto: invalid token")
@@ -104,17 +127,27 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	}
 
 	// Extract components
-	m := raw[:len(raw)-ed25519.SignatureSize]
-	s := raw[len(raw)-ed25519.SignatureSize:]
+	m := raw[:len(raw)-signatureSize]
+	sig := raw[len(raw)-signatureSize:]
+
+	// Compress public key point
+	pk := elliptic.MarshalCompressed(elliptic.P384(), pub.X, pub.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, []byte(f), []byte(i))
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
 	}
 
+	// Compute SHA-384 digest
+	digest := sha512.Sum384(m2)
+
+	// Split signature
+	r := big.NewInt(0).SetBytes(sig[:kdfOutputLength])
+	s := big.NewInt(0).SetBytes(sig[kdfOutputLength:])
+
 	// Check signature
-	if !ed25519.Verify(pk, m2, s) {
+	if !ecdsa.Verify(pub, digest[:], r, s) {
 		return nil, errors.New("paseto: invalid token signature")
 	}
 

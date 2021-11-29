@@ -15,16 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package v4
+package v3
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
-
-	"golang.org/x/crypto/chacha20"
 
 	"zntr.io/paseto/internal/common"
 )
@@ -55,8 +55,8 @@ func LocalKeyFromSeed(seed []byte) (*LocalKey, error) {
 	return &key, nil
 }
 
-// PASETO v4 symmetric encryption primitive.
-// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#encrypt
+// PASETO v3 symmetric encryption primitive.
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#encrypt
 func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) {
 	// Check arguments
 	if key == nil {
@@ -78,11 +78,12 @@ func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) 
 		return nil, fmt.Errorf("paseto: unable to derive keys from seed: %w", err)
 	}
 
-	// Prepare XChaCha20 stream cipher (nonce > 24bytes => XChacha)
-	ciph, err := chacha20.NewUnauthenticatedCipher(ek, n2)
+	// Prepare an AES-256-CTR stream cipher
+	block, err := aes.NewCipher(ek)
 	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to initialize XChaCha20 cipher: %w", err)
+		return nil, fmt.Errorf("paseto: unable to prepare block cipher: %w", err)
 	}
+	ciph := cipher.NewCTR(block, n2)
 
 	// Encrypt the payload
 	c := make([]byte, len(m))
@@ -119,8 +120,8 @@ func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) 
 	return final, nil
 }
 
-// PASETO v4 symmetric decryption primitive
-// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#decrypt
+// PASETO v3 symmetric decryption primitive
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#decrypt
 func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
 	// Check arguments
 	if key == nil {
@@ -192,11 +193,12 @@ func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
 		return nil, errors.New("paseto: invalid pre-authentication header")
 	}
 
-	// Prepare XChaCha20 stream cipher
-	ciph, err := chacha20.NewUnauthenticatedCipher(ek, n2)
+	// Prepare an AES-256-CTR stream cipher
+	block, err := aes.NewCipher(ek)
 	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to initialize XChaCha20 cipher: %w", err)
+		return nil, fmt.Errorf("paseto: unable to prepare block cipher: %w", err)
 	}
+	ciph := cipher.NewCTR(block, n2)
 
 	// Decrypt the payload
 	m := make([]byte, len(c))

@@ -15,13 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package v4
+package v3
 
 import (
+	"crypto/hmac"
+	"crypto/sha512"
 	"errors"
 	"fmt"
+	"io"
 
-	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/hkdf"
 
 	"zntr.io/paseto/internal/common"
 )
@@ -32,31 +35,27 @@ func kdf(key *LocalKey, n []byte) (ek, n2, ak []byte, err error) {
 		return nil, nil, nil, errors.New("unable to derive keys from a nil seed")
 	}
 
-	// Derive encryption key
-	encKDF, err := blake2b.New(encryptionKDFLength, key[:])
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to initialize encryption kdf: %w", err)
-	}
+	// Prepare HKDF-HMAC-SHA384
+	encKDF := hkdf.New(sha512.New384, key[:], nil, append([]byte("paseto-encryption-key"), n...))
 
-	// Domain separation (we use the same seed for 2 different purposes)
-	encKDF.Write([]byte("paseto-encryption-key"))
-	encKDF.Write(n)
-	tmp := encKDF.Sum(nil)
+	// Derive encryption key
+	tmp := make([]byte, kdfOutputLength)
+	if _, err := io.ReadFull(encKDF, tmp); err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to generate encryption key from seed: %w", err)
+	}
 
 	// Split encryption key (Ek) and nonce (n2)
 	ek = tmp[:KeyLength]
 	n2 = tmp[KeyLength:]
 
 	// Derive authentication key
-	authKDF, err := blake2b.New(authenticationKeyLength, key[:])
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to initialize authentication kdf: %w", err)
-	}
+	authKDF := hkdf.New(sha512.New384, key[:], nil, append([]byte("paseto-auth-key-for-aead"), n...))
 
-	// Domain separation (we use the same seed for 2 different purposes)
-	authKDF.Write([]byte("paseto-auth-key-for-aead"))
-	authKDF.Write(n)
-	ak = authKDF.Sum(nil)
+	// Derive authentication key
+	ak = make([]byte, kdfOutputLength)
+	if _, err := io.ReadFull(authKDF, ak); err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to generate authentication key from seed: %w", err)
+	}
 
 	// No error
 	return ek, n2, ak, nil
@@ -70,10 +69,7 @@ func mac(ak []byte, h string, n, c []byte, f, i string) ([]byte, error) {
 	}
 
 	// Compute MAC
-	mac, err := blake2b.New(macLength, ak)
-	if err != nil {
-		return nil, fmt.Errorf("unable to in initialize MAC kdf: %w", err)
-	}
+	mac := hmac.New(sha512.New384, ak)
 
 	// Hash pre-authentication content
 	mac.Write(preAuth)

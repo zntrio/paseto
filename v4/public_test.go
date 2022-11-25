@@ -36,7 +36,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 		secretKeyPem      string
 		publicKeyPem      string
 		token             string
-		payload           string
+		payload           []byte
 		footer            string
 		implicitAssertion string
 	}{
@@ -49,7 +49,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			secretKeyPem:      "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILTL+0PfTOIQcn2VPkpxMwf6Gbt9n4UEFDjZ4RuUKjd0\n-----END PRIVATE KEY-----",
 			publicKeyPem:      "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAHrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=\n-----END PUBLIC KEY-----",
 			token:             "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9bg_XBBzds8lTZShVlwwKSgeKpLT3yukTw6JUz3W4h_ExsQV-P0V54zemZDcAxFaSeef1QlXEFtkqxT1ciiQEDA",
-			payload:           "{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
+			payload:           []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
 			footer:            "",
 			implicitAssertion: "",
 		},
@@ -62,7 +62,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			secretKeyPem:      "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILTL+0PfTOIQcn2VPkpxMwf6Gbt9n4UEFDjZ4RuUKjd0\n-----END PRIVATE KEY-----",
 			publicKeyPem:      "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAHrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=\n-----END PUBLIC KEY-----",
 			token:             "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9v3Jt8mx_TdM2ceTGoqwrh4yDFn0XsHvvV_D0DtwQxVrJEBMl0F2caAdgnpKlt4p7xBnx1HcO-SPo8FPp214HDw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
-			payload:           "{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
+			payload:           []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
 			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
 			implicitAssertion: "",
 		},
@@ -75,7 +75,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			secretKeyPem:      "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILTL+0PfTOIQcn2VPkpxMwf6Gbt9n4UEFDjZ4RuUKjd0\n-----END PRIVATE KEY-----",
 			publicKeyPem:      "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAHrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=\n-----END PUBLIC KEY-----",
 			token:             "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9NPWciuD3d0o5eXJXG5pJy-DiVEoyPYWs1YSTwWHNJq6DZD3je5gf-0M4JR9ipdUSJbIovzmBECeaWmaqcaP0DQ.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
-			payload:           "{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
+			payload:           []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
 			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
 			implicitAssertion: "{\"test-vector\":\"4-S-3\"}",
 		},
@@ -100,7 +100,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, publicKey, []byte(pk))
 
 			// Sign
-			token, err := Sign([]byte(testCase.payload), sk, testCase.footer, testCase.implicitAssertion)
+			token, err := Sign(testCase.payload, sk, []byte(testCase.footer), []byte(testCase.implicitAssertion))
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the sign call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -108,19 +108,19 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, testCase.token, string(token))
 
 			// Verify
-			message, err := Verify([]byte(testCase.token), pk, testCase.footer, testCase.implicitAssertion)
+			message, err := Verify([]byte(testCase.token), pk, []byte(testCase.footer), []byte(testCase.implicitAssertion))
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the verify call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
 			}
-			assert.Equal(t, testCase.payload, string(message))
+			assert.Equal(t, testCase.payload, message)
 		})
 	}
 }
 
 // -----------------------------------------------------------------------------
 
-func benchmarkSign(m []byte, sk ed25519.PrivateKey, f, i string, b *testing.B) {
+func benchmarkSign(m []byte, sk ed25519.PrivateKey, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Sign(m, sk, f, i)
 		if err != nil {
@@ -134,8 +134,8 @@ func Benchmark_Paseto_Sign(b *testing.B) {
 	assert.NoError(b, err)
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
-	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
-	i := "{\"test-vector\":\"4-S-3\"}"
+	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
+	i := []byte("{\"test-vector\":\"4-S-3\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -143,7 +143,7 @@ func Benchmark_Paseto_Sign(b *testing.B) {
 	benchmarkSign(m, sk, f, i, b)
 }
 
-func benchmarkVerify(m []byte, pk ed25519.PublicKey, f, i string, b *testing.B) {
+func benchmarkVerify(m []byte, pk ed25519.PublicKey, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Verify(m, pk, f, i)
 		if err != nil {
@@ -157,8 +157,8 @@ func Benchmark_Paseto_Verify(b *testing.B) {
 	assert.NoError(b, err)
 
 	token := []byte("v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9NPWciuD3d0o5eXJXG5pJy-DiVEoyPYWs1YSTwWHNJq6DZD3je5gf-0M4JR9ipdUSJbIovzmBECeaWmaqcaP0DQ.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9")
-	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
-	i := "{\"test-vector\":\"4-S-3\"}"
+	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
+	i := []byte("{\"test-vector\":\"4-S-3\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()

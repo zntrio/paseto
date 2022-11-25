@@ -39,7 +39,7 @@ func ExamplePasetoV4LocalWithoutFooter() {
 	m := []byte("my super secret message")
 
 	// Encrypt the token
-	token, err := pasetov4.Encrypt(deterministicSeedForTest, localKey, m, "", "")
+	token, err := pasetov4.Encrypt(deterministicSeedForTest, localKey, m, nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -63,10 +63,10 @@ func ExamplePasetoV4LocalWithFooter() {
 
 	// The footer is public and not encrypted but protected by integrity check.
 	// You can use it to transport information about the token context.
-	footer := `{"kid":"1234567890"}`
+	footer := []byte(`{"kid":"1234567890"}`)
 
 	// Encrypt the token
-	token, err := pasetov4.Encrypt(deterministicSeedForTest, localKey, m, footer, "")
+	token, err := pasetov4.Encrypt(deterministicSeedForTest, localKey, m, footer, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -87,11 +87,11 @@ func ExamplePasetoV4LocalWithFooterAndImplicitAssertions() {
 
 	// Prepare the message
 	m := []byte("my super secret message")
-	footer := `{"kid":"1234567890"}`
+	footer := []byte(`{"kid":"1234567890"}`)
 
 	// Assertions are informations not published in the token but kept by the producer
 	// and used during the token integrity check.
-	assertions := `{"user_id":"1234567890"}`
+	assertions := []byte(`{"user_id":"1234567890"}`)
 
 	// Encrypt the token
 	token, err := pasetov4.Encrypt(deterministicSeedForTest, localKey, m, footer, assertions)
@@ -117,11 +117,11 @@ func ExamplePasetoV4LocalDecrypt() {
 	input := []byte("v4.local.dGVzdHMtMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTZ-qF7cj1LApZxpU5R2qdaX9Ox9NaKxnci6ObPVawSbAlqcRdmSDrklvbUqNGk61-tuOKJ0vkFQ.eyJraWQiOiIxMjM0NTY3ODkwIn0")
 
 	// Expected footer value.
-	footer := `{"kid":"1234567890"}`
+	footer := []byte(`{"kid":"1234567890"}`)
 
 	// Assertions are informations not published in the token but kept by the producer
 	// and used during the token integrity check.
-	assertions := `{"user_id":"1234567890"}`
+	assertions := []byte(`{"user_id":"1234567890"}`)
 
 	m, err := pasetov4.Decrypt(localKey, input, footer, assertions)
 	if err != nil {
@@ -145,8 +145,8 @@ func ExamplePasetoV4PublicSign() {
 
 	// Prepare the message
 	m := []byte("my super secret message")
-	footer := `{"kid":"1234567890"}`
-	assertions := `{"user_id":"1234567890"}`
+	footer := []byte(`{"kid":"1234567890"}`)
+	assertions := []byte(`{"user_id":"1234567890"}`)
 
 	// Sign the token
 	token, err := pasetov4.Sign(m, sk, footer, assertions)
@@ -170,8 +170,8 @@ func ExamplePasetoV4PublicVerify() {
 
 	// Prepare the message
 	input := []byte("v4.public.bXkgc3VwZXIgc2VjcmV0IG1lc3NhZ2UbOO-zu6XQbbhmDj0IUEjrmLS_TK1vM69D3pmdbUJmSa7A4c0qjEi9q-DQiMD6UUtbGEMXA1z9zdRskpGfStQH.eyJraWQiOiIxMjM0NTY3ODkwIn0")
-	footer := `{"kid":"1234567890"}`
-	assertions := `{"user_id":"1234567890"}`
+	footer := []byte(`{"kid":"1234567890"}`)
+	assertions := []byte(`{"user_id":"1234567890"}`)
 
 	// Sign the token
 	m, err := pasetov4.Verify(input, pk, footer, assertions)

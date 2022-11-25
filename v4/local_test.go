@@ -34,9 +34,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 		key               string
 		nonce             string
 		token             string
-		payload           string
-		footer            string
-		implicitAssertion string
+		payload           []byte
+		footer            []byte
+		implicitAssertion []byte
 	}{
 		{
 			name:              "4-E-1",
@@ -44,9 +44,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			nonce:             "0000000000000000000000000000000000000000000000000000000000000000",
 			token:             "v4.local.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAr68PS4AXe7If_ZgesdkUMvSwscFlAl1pk5HC0e8kApeaqMfGo_7OpBnwJOAbY9V7WU6abu74MmcUE8YWAiaArVI8XJ5hOb_4v9RmDkneN0S92dx0OW4pgy7omxgf3S8c3LlQg",
-			payload:           "{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "",
-			implicitAssertion: "",
+			payload:           []byte("{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte(""),
+			implicitAssertion: []byte(""),
 		},
 		{
 			name:              "4-E-2",
@@ -54,9 +54,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			nonce:             "0000000000000000000000000000000000000000000000000000000000000000",
 			token:             "v4.local.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAr68PS4AXe7If_ZgesdkUMvS2csCgglvpk5HC0e8kApeaqMfGo_7OpBnwJOAbY9V7WU6abu74MmcUE8YWAiaArVI8XIemu9chy3WVKvRBfg6t8wwYHK0ArLxxfZP73W_vfwt5A",
-			payload:           "{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "",
-			implicitAssertion: "",
+			payload:           []byte("{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte(""),
+			implicitAssertion: []byte(""),
 		},
 		{
 			name:              "4-E-3",
@@ -64,9 +64,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WkwMsYXw6FSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t6-tyebyWG6Ov7kKvBdkrrAJ837lKP3iDag2hzUPHuMKA",
-			payload:           "{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "",
-			implicitAssertion: "",
+			payload:           []byte("{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte(""),
+			implicitAssertion: []byte(""),
 		},
 		{
 			name:              "4-E-4",
@@ -74,9 +74,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t4gt6TiLm55vIH8c_lGxxZpE3AWlH4WTR0v45nsWoU3gQ",
-			payload:           "{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "",
-			implicitAssertion: "",
+			payload:           []byte("{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte(""),
+			implicitAssertion: []byte(""),
 		},
 		{
 			name:              "4-E-5",
@@ -84,9 +84,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WkwMsYXw6FSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t4x-RMNXtQNbz7FvFZ_G-lFpk5RG3EOrwDL6CgDqcerSQ.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
-			payload:           "{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
-			implicitAssertion: "",
+			payload:           []byte("{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"),
+			implicitAssertion: []byte(""),
 		},
 		{
 			name:              "4-E-6",
@@ -94,9 +94,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t6pWSA5HX2wjb3P-xLQg5K5feUCX4P2fpVK3ZLWFbMSxQ.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
-			payload:           "{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
-			implicitAssertion: "",
+			payload:           []byte("{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"),
+			implicitAssertion: []byte(""),
 		},
 		{
 			name:              "4-E-7",
@@ -104,9 +104,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WkwMsYXw6FSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t40KCCWLA7GYL9KFHzKlwY9_RnIfRrMQpueydLEAZGGcA.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
-			payload:           "{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
-			implicitAssertion: "{\"test-vector\":\"4-E-7\"}",
+			payload:           []byte("{\"data\":\"this is a secret message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"),
+			implicitAssertion: []byte("{\"test-vector\":\"4-E-7\"}"),
 		},
 		{
 			name:              "4-E-8",
@@ -114,9 +114,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t5uvqQbMGlLLNYBc7A6_x7oqnpUK5WLvj24eE4DVPDZjw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
-			payload:           "{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
-			implicitAssertion: "{\"test-vector\":\"4-E-8\"}",
+			payload:           []byte("{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"),
+			implicitAssertion: []byte("{\"test-vector\":\"4-E-8\"}"),
 		},
 		{
 			name:              "4-E-9",
@@ -124,9 +124,9 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			nonce:             "df654812bac492663825520ba2f6e67cf5ca5bdc13d4e7507a98cc4c2fcc3ad8",
 			key:               "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
 			token:             "v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t6tybdlmnMwcDMw0YxA_gFSE_IUWl78aMtOepFYSWYfQA.YXJiaXRyYXJ5LXN0cmluZy10aGF0LWlzbid0LWpzb24",
-			payload:           "{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
-			footer:            "arbitrary-string-that-isn't-json",
-			implicitAssertion: "{\"test-vector\":\"4-E-9\"}",
+			payload:           []byte("{\"data\":\"this is a hidden message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}"),
+			footer:            []byte("arbitrary-string-that-isn't-json"),
+			implicitAssertion: []byte("{\"test-vector\":\"4-E-9\"}"),
 		},
 	}
 
@@ -145,7 +145,7 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Encrypt
-			token, err := Encrypt(bytes.NewReader(n), key, []byte(testCase.payload), testCase.footer, testCase.implicitAssertion)
+			token, err := Encrypt(bytes.NewReader(n), key, testCase.payload, testCase.footer, testCase.implicitAssertion)
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the encrypt call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -158,7 +158,7 @@ func Test_Paseto_LocalVector(t *testing.T) {
 				t.Errorf("error during the decrypt call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
 			}
-			assert.Equal(t, testCase.payload, string(message))
+			assert.Equal(t, testCase.payload, message)
 		})
 	}
 }
@@ -171,8 +171,8 @@ func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
 	assert.NoError(t, err)
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
-	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
-	i := "{\"test-vector\":\"4-S-3\"}"
+	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
+	i := []byte("{\"test-vector\":\"4-S-3\"}")
 
 	token1, err := Encrypt(rand.Reader, key, m, f, i)
 	assert.NoError(t, err)
@@ -191,7 +191,7 @@ func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
 
 // -----------------------------------------------------------------------------
 
-func benchmarkEncrypt(key *LocalKey, m []byte, f, i string, b *testing.B) {
+func benchmarkEncrypt(key *LocalKey, m, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Encrypt(rand.Reader, key, m, f, i)
 		if err != nil {
@@ -207,8 +207,8 @@ func Benchmark_Paseto_Encrypt(b *testing.B) {
 	key := LocalKey(keyRaw)
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
-	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
-	i := "{\"test-vector\":\"4-S-3\"}"
+	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
+	i := []byte("{\"test-vector\":\"4-S-3\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -216,7 +216,7 @@ func Benchmark_Paseto_Encrypt(b *testing.B) {
 	benchmarkEncrypt(&key, m, f, i, b)
 }
 
-func benchmarkDecrypt(key *LocalKey, m []byte, f, i string, b *testing.B) {
+func benchmarkDecrypt(key *LocalKey, m, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Decrypt(key, m, f, i)
 		if err != nil {
@@ -232,8 +232,8 @@ func Benchmark_Paseto_Decrypt(b *testing.B) {
 	key := LocalKey(keyRaw)
 
 	m := []byte("v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t5uvqQbMGlLLNYBc7A6_x7oqnpUK5WLvj24eE4DVPDZjw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9")
-	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
-	i := "{\"test-vector\":\"4-E-8\"}"
+	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
+	i := []byte("{\"test-vector\":\"4-E-8\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()

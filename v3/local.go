@@ -57,7 +57,7 @@ func LocalKeyFromSeed(seed []byte) (*LocalKey, error) {
 
 // PASETO v3 symmetric encryption primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#encrypt
-func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) {
+func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) ([]byte, error) {
 	// Check arguments
 	if key == nil {
 		return nil, errors.New("paseto: key is nil")
@@ -90,7 +90,7 @@ func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) 
 	ciph.XORKeyStream(c, m)
 
 	// Compute MAC
-	t, err := mac(ak, LocalPrefix, n[:], c, f, i)
+	t, err := mac(ak, []byte(LocalPrefix), n[:], c, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
 	}
@@ -107,7 +107,7 @@ func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) 
 
 	// Assemble final token
 	final := append([]byte(LocalPrefix), encodedBody...)
-	if f != "" {
+	if len(f) > 0 {
 		// Encode footer as RawURLBase64
 		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
 		base64.RawURLEncoding.Encode(encodedFooter, []byte(f))
@@ -122,7 +122,7 @@ func Encrypt(r io.Reader, key *LocalKey, m []byte, f, i string) ([]byte, error) 
 
 // PASETO v3 symmetric decryption primitive
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#decrypt
-func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
+func Decrypt(key *LocalKey, input, f, i []byte) ([]byte, error) {
 	// Check arguments
 	if key == nil {
 		return nil, errors.New("paseto: key is nil")
@@ -143,7 +143,7 @@ func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
 	input = input[len(LocalPrefix):]
 
 	// Check footer usage
-	if f != "" {
+	if len(f) > 0 {
 		// Split the footer and the body
 		parts := bytes.SplitN(input, []byte("."), 2)
 		if len(parts) != 2 {
@@ -157,7 +157,7 @@ func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
 		}
 
 		// Compare footer
-		if !common.SecureCompare([]byte(f), footer) {
+		if !common.SecureCompare(f, footer) {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
@@ -183,7 +183,7 @@ func Decrypt(key *LocalKey, input []byte, f, i string) ([]byte, error) {
 	}
 
 	// Compute MAC
-	t2, err := mac(ak, LocalPrefix, n, c, f, i)
+	t2, err := mac(ak, []byte(LocalPrefix), n, c, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
 	}

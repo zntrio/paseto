@@ -30,9 +30,9 @@ import (
 // Sign a message (m) with the private key (sk).
 // PASETO v4 public signature primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#sign
-func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
+func Sign(m []byte, sk ed25519.PrivateKey, f, i []byte) ([]byte, error) {
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
 	}
@@ -50,10 +50,10 @@ func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 
 	// Assemble final token
 	final := append([]byte(PublicPrefix), encodedBody...)
-	if f != "" {
+	if len(f) > 0 {
 		// Encode footer as RawURLBase64
 		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
-		base64.RawURLEncoding.Encode(encodedFooter, []byte(f))
+		base64.RawURLEncoding.Encode(encodedFooter, f)
 
 		// Assemble body and footer
 		final = append(final, append([]byte("."), encodedFooter...)...)
@@ -65,7 +65,7 @@ func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 
 // PASETO v4 signature verification primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#verify
-func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
+func Verify(sm []byte, pk ed25519.PublicKey, f, i []byte) ([]byte, error) {
 	// Check token header
 	if !bytes.HasPrefix(sm, []byte(PublicPrefix)) {
 		return nil, errors.New("paseto: invalid token")
@@ -75,7 +75,7 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	sm = sm[len(PublicPrefix):]
 
 	// Check footer usage
-	if f != "" {
+	if len(f) > 0 {
 		// Split the footer and the body
 		parts := bytes.SplitN(sm, []byte("."), 2)
 		if len(parts) != 2 {
@@ -89,7 +89,7 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 		}
 
 		// Compare footer
-		if !common.SecureCompare([]byte(f), footer) {
+		if !common.SecureCompare(f, footer) {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
@@ -108,7 +108,7 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	s := raw[len(raw)-ed25519.SignatureSize:]
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
 	}

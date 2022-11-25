@@ -89,7 +89,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
 
 			// Sign
-			token, err := Sign([]byte(testCase.payload), &sk, testCase.footer, testCase.implicitAssertion)
+			token, err := Sign([]byte(testCase.payload), &sk, []byte(testCase.footer), []byte(testCase.implicitAssertion))
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the sign call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -97,7 +97,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, testCase.token, string(token))
 
 			// Verify
-			message, err := Verify([]byte(testCase.token), &sk.PublicKey, testCase.footer, testCase.implicitAssertion)
+			message, err := Verify([]byte(testCase.token), &sk.PublicKey, []byte(testCase.footer), []byte(testCase.implicitAssertion))
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the verify call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -109,7 +109,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 
 // -----------------------------------------------------------------------------
 
-func benchmarkSign(m []byte, sk *ecdsa.PrivateKey, f, i string, b *testing.B) {
+func benchmarkSign(m []byte, sk *ecdsa.PrivateKey, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Sign(m, sk, f, i)
 		if err != nil {
@@ -125,8 +125,8 @@ func Benchmark_Paseto_Sign(b *testing.B) {
 	sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
-	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
-	i := "{\"test-vector\":\"4-S-3\"}"
+	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
+	i := []byte("{\"test-vector\":\"4-S-3\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -134,7 +134,7 @@ func Benchmark_Paseto_Sign(b *testing.B) {
 	benchmarkSign(m, &sk, f, i, b)
 }
 
-func benchmarkVerify(m []byte, pk *ecdsa.PublicKey, f, i string, b *testing.B) {
+func benchmarkVerify(m []byte, pk *ecdsa.PublicKey, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, err := Verify(m, pk, f, i)
 		if err != nil {
@@ -150,8 +150,8 @@ func Benchmark_Paseto_Verify(b *testing.B) {
 	sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
 
 	token := []byte("v3.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ94SjWIbjmS7715GjLSnHnpJrC9Z-cnwK45dmvnVvCRQDCCKAXaKEopTajX0DKYx1Xqr6gcTdfqscLCAbiB4eOW9jlt-oNqdG8TjsYEi6aloBfTzF1DXff_45tFlnBukEX.eyJraWQiOiJkWWtJU3lseFFlZWNFY0hFTGZ6Rjg4VVpyd2JMb2xOaUNkcHpVSEd3OVVxbiJ9")
-	f := "{\"kid\":\"dYkISylxQeecEcHELfzF88UZrwbLolNiCdpzUHGw9Uqn\"}"
-	i := "{\"test-vector\":\"3-S-3\"}"
+	f := []byte("{\"kid\":\"dYkISylxQeecEcHELfzF88UZrwbLolNiCdpzUHGw9Uqn\"}")
+	i := []byte("{\"test-vector\":\"3-S-3\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()

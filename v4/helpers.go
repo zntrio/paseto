@@ -62,9 +62,9 @@ func kdf(key *LocalKey, n []byte) (ek, n2, ak []byte, err error) {
 	return ek, n2, ak, nil
 }
 
-func mac(ak []byte, h string, n, c []byte, f, i string) ([]byte, error) {
+func mac(ak, h, n, c, f, i []byte) ([]byte, error) {
 	// Compute pre-authentication message
-	preAuth, err := common.PreAuthenticationEncoding([]byte(h), n, c, []byte(f), []byte(i))
+	preAuth, err := common.PreAuthenticationEncoding(h, n, c, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("unable to compute pre-authentication content: %w", err)
 	}

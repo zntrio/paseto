@@ -34,7 +34,7 @@ import (
 // Sign a message (m) with the private key (sk).
 // PASETO v3 public signature primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#sign
-func Sign(m []byte, sk *ecdsa.PrivateKey, f, i string) ([]byte, error) {
+func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) ([]byte, error) {
 	// Check arguments
 	if sk == nil {
 		return nil, errors.New("paseto: unable to sign with a nil private key")
@@ -44,7 +44,7 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i string) ([]byte, error) {
 	pk := elliptic.MarshalCompressed(elliptic.P384(), sk.X, sk.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to prepare protected content: %w", err)
 	}
@@ -68,10 +68,10 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i string) ([]byte, error) {
 
 	// Assemble final token
 	final := append([]byte(PublicPrefix), encodedBody...)
-	if f != "" {
+	if len(f) > 0 {
 		// Encode footer as RawURLBase64
 		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
-		base64.RawURLEncoding.Encode(encodedFooter, []byte(f))
+		base64.RawURLEncoding.Encode(encodedFooter, f)
 
 		// Assemble body and footer
 		final = append(final, append([]byte("."), encodedFooter...)...)
@@ -83,7 +83,7 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i string) ([]byte, error) {
 
 // PASETO v3 signature verification primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#verify
-func Verify(sm []byte, pub *ecdsa.PublicKey, f, i string) ([]byte, error) {
+func Verify(sm []byte, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 	// Check arguments
 	if pub == nil {
 		return nil, errors.New("paseto: public key is nil")
@@ -98,7 +98,7 @@ func Verify(sm []byte, pub *ecdsa.PublicKey, f, i string) ([]byte, error) {
 	sm = sm[len(PublicPrefix):]
 
 	// Check footer usage
-	if f != "" {
+	if len(f) > 0 {
 		// Split the footer and the body
 		parts := bytes.SplitN(sm, []byte("."), 2)
 		if len(parts) != 2 {
@@ -134,7 +134,7 @@ func Verify(sm []byte, pub *ecdsa.PublicKey, f, i string) ([]byte, error) {
 	pk := elliptic.MarshalCompressed(elliptic.P384(), pub.X, pub.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, []byte(f), []byte(i))
+	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, f, i)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
 	}

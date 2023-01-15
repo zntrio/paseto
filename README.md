@@ -47,36 +47,36 @@ More examples - [here](example_test.go)
 
 ## Benchmarks
 
-> Go version 1.19.3 / Mac M1
+> Go version 1.19.5 / Mac M1
 
 ### V3
 
 ```sh
-$ go test -bench=. -test.benchtime=1s
+❯ go test -bench=. -test.benchtime=1s
 goos: darwin
 goarch: arm64
 pkg: zntr.io/paseto/v3
-Benchmark_Paseto_Encrypt-10    	   75150	     15071 ns/op	    9328 B/op	      76 allocs/op
-Benchmark_Paseto_Decrypt-10    	   82350	     14535 ns/op	    8200 B/op	      69 allocs/op
-Benchmark_Paseto_Sign-10       	    7507	    159817 ns/op	   10004 B/op	     101 allocs/op
-Benchmark_Paseto_Verify-10     	    1945	    614350 ns/op	    3770 B/op	      61 allocs/op
+Benchmark_Paseto_Encrypt-10    	   74997	     14869 ns/op	    8800 B/op	      70 allocs/op
+Benchmark_Paseto_Decrypt-10    	   83835	     14272 ns/op	    7912 B/op	      66 allocs/op
+Benchmark_Paseto_Sign-10       	    7545	    156930 ns/op	    9812 B/op	      99 allocs/op
+Benchmark_Paseto_Verify-10     	    1986	    615306 ns/op	    3578 B/op	      59 allocs/op
 PASS
-ok  	zntr.io/paseto/v3	5.276s
+ok  	zntr.io/paseto/v3	5.400s
 ```
 
 ### V4
 
 ```sh
-$ go test -bench=. -test.benchtime=1s
+❯ go test -bench=. -test.benchtime=1s
 goos: darwin
 goarch: arm64
 pkg: zntr.io/paseto/v4
-Benchmark_Paseto_Encrypt-10    	  423649	      2823 ns/op	    3296 B/op	      29 allocs/op
-Benchmark_Paseto_Decrypt-10    	  503470	      2389 ns/op	    2208 B/op	      22 allocs/op
-Benchmark_Paseto_Sign-10       	   46567	     25378 ns/op	    1720 B/op	      17 allocs/op
-Benchmark_Paseto_Verify-10     	   22294	     53853 ns/op	     792 B/op	      12 allocs/op
+Benchmark_Paseto_Encrypt-10    	  426136	      2811 ns/op	    2752 B/op	      23 allocs/op
+Benchmark_Paseto_Decrypt-10    	  517602	      2244 ns/op	    1920 B/op	      19 allocs/op
+Benchmark_Paseto_Sign-10       	   48186	     24887 ns/op	    1480 B/op	      15 allocs/op
+Benchmark_Paseto_Verify-10     	   22714	     52885 ns/op	     552 B/op	      10 allocs/op
 PASS
-ok  	zntr.io/paseto/v4	6.723s
+ok  	zntr.io/paseto/v4	6.851s
 ```
 
 ## License

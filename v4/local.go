@@ -66,14 +66,16 @@ func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) ([]byte, error) {
 		return nil, fmt.Errorf("paseto: invalid key length, it must be %d bytes long", KeyLength)
 	}
 
+	// Pre-allocate body
+	body := make([]byte, nonceLength+len(m), nonceLength+len(m)+macLength)
+
 	// Create random seed
-	var n [nonceLength]byte
-	if _, err := io.ReadFull(r, n[:]); err != nil {
+	if _, err := io.ReadFull(r, body[:nonceLength]); err != nil {
 		return nil, fmt.Errorf("paseto: unable to generate random seed: %w", err)
 	}
 
 	// Derive keys from seed and secret key
-	ek, n2, ak, err := kdf(key, n[:])
+	ek, n2, ak, err := kdf(key, body[:nonceLength])
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to derive keys from seed: %w", err)
 	}
@@ -85,19 +87,16 @@ func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) ([]byte, error) {
 	}
 
 	// Encrypt the payload
-	c := make([]byte, len(m))
-	ciph.XORKeyStream(c, m)
+	ciph.XORKeyStream(body[nonceLength:], m)
 
 	// Compute MAC
-	t, err := mac(ak, []byte(LocalPrefix), n[:], c, f, i)
+	t, err := mac(ak, []byte(LocalPrefix), body[:nonceLength], body[nonceLength:], f, i)
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
 	}
 
 	// Serialize final token
 	// h || base64url(n || c || t)
-	body := append([]byte{}, n[:]...)
-	body = append(body, c...)
 	body = append(body, t...)
 
 	// Encode body as RawURLBase64
@@ -199,9 +198,8 @@ func Decrypt(key *LocalKey, input, f, i []byte) ([]byte, error) {
 	}
 
 	// Decrypt the payload
-	m := make([]byte, len(c))
-	ciph.XORKeyStream(m, c)
+	ciph.XORKeyStream(c, c)
 
 	// No error
-	return m, nil
+	return c, nil
 }

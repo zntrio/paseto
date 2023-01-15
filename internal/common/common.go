@@ -27,6 +27,16 @@ import (
 func PreAuthenticationEncoding(pieces ...[]byte) ([]byte, error) {
 	output := &bytes.Buffer{}
 
+	// Precompute length to allocate the buffer
+	// PieceCount (8B) || ( PieceLen (8B) || Piece (*B) )*
+	bufLen := 8
+	for i := range pieces {
+		bufLen += 8 + len(pieces[i])
+	}
+
+	// Pre-allocate the buffer
+	output.Grow(bufLen)
+
 	// Encode piece count
 	count := len(pieces)
 	if err := binary.Write(output, binary.LittleEndian, uint64(count)); err != nil {

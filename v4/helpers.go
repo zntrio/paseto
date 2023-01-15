@@ -43,10 +43,6 @@ func kdf(key *LocalKey, n []byte) (ek, n2, ak []byte, err error) {
 	encKDF.Write(n)
 	tmp := encKDF.Sum(nil)
 
-	// Split encryption key (Ek) and nonce (n2)
-	ek = tmp[:KeyLength]
-	n2 = tmp[KeyLength:]
-
 	// Derive authentication key
 	authKDF, err := blake2b.New(authenticationKeyLength, key[:])
 	if err != nil {
@@ -59,15 +55,12 @@ func kdf(key *LocalKey, n []byte) (ek, n2, ak []byte, err error) {
 	ak = authKDF.Sum(nil)
 
 	// No error
-	return ek, n2, ak, nil
+	return tmp[:KeyLength], tmp[KeyLength:], ak, nil
 }
 
 func mac(ak, h, n, c, f, i []byte) ([]byte, error) {
 	// Compute pre-authentication message
-	preAuth, err := common.PreAuthenticationEncoding(h, n, c, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("unable to compute pre-authentication content: %w", err)
-	}
+	preAuth := common.PreAuthenticationEncoding(h, n, c, f, i)
 
 	// Compute MAC
 	mac, err := blake2b.New(macLength, ak)

@@ -20,6 +20,7 @@ package v4
 import (
 	"bytes"
 	"crypto/ed25519"
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -32,35 +33,35 @@ import (
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#sign
 func Sign(m []byte, sk ed25519.PrivateKey, f, i []byte) ([]byte, error) {
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
-	}
+	m2 := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, f, i)
 
 	// Sign protected content
 	sig := ed25519.Sign(sk, m2)
 
 	// Prepare content
-	body := append([]byte{}, m...)
+	body := make([]byte, 0, len(m)+ed25519.SignatureSize)
+	body = append(body, m...)
 	body = append(body, sig...)
 
 	// Encode body as RawURLBase64
-	encodedBody := make([]byte, base64.RawURLEncoding.EncodedLen(len(body)))
-	base64.RawURLEncoding.Encode(encodedBody, body)
+	tokenLen := base64.RawURLEncoding.EncodedLen(len(body))
+	footerLen := base64.RawURLEncoding.EncodedLen(len(f)) + 1
+	if len(f) > 0 {
+		tokenLen += base64.RawURLEncoding.EncodedLen(len(f)) + 1
+	}
+
+	final := make([]byte, tokenLen)
+	base64.RawURLEncoding.Encode(final, body)
 
 	// Assemble final token
-	final := append([]byte(PublicPrefix), encodedBody...)
 	if len(f) > 0 {
+		final[tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
-		base64.RawURLEncoding.Encode(encodedFooter, f)
-
-		// Assemble body and footer
-		final = append(final, append([]byte("."), encodedFooter...)...)
+		base64.RawURLEncoding.Encode(final[tokenLen-footerLen+1:], []byte(f))
 	}
 
 	// No error
-	return final, nil
+	return append([]byte(PublicPrefix), final...), nil
 }
 
 // PASETO v4 signature verification primitive.
@@ -77,24 +78,24 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i []byte) ([]byte, error) {
 	// Check footer usage
 	if len(f) > 0 {
 		// Split the footer and the body
-		parts := bytes.SplitN(sm, []byte("."), 2)
-		if len(parts) != 2 {
+		footerIdx := bytes.Index(sm, []byte("."))
+		if footerIdx == 0 {
 			return nil, errors.New("paseto: invalid token, footer is missing but expected")
 		}
 
 		// Decode footer
-		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(parts[1])))
-		if _, err := base64.RawURLEncoding.Decode(footer, parts[1]); err != nil {
+		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(sm[footerIdx+1:])))
+		if _, err := base64.RawURLEncoding.Decode(footer, sm[footerIdx+1:]); err != nil {
 			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
 		}
 
 		// Compare footer
-		if !common.SecureCompare(f, footer) {
+		if subtle.ConstantTimeCompare(f, footer) == 0 {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
 		// Continue without footer
-		sm = parts[0]
+		sm = sm[:footerIdx]
 	}
 
 	// Decode token
@@ -108,10 +109,7 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i []byte) ([]byte, error) {
 	s := raw[len(raw)-ed25519.SignatureSize:]
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
-	}
+	m2 := common.PreAuthenticationEncoding([]byte(PublicPrefix), m, f, i)
 
 	// Check signature
 	if !ed25519.Verify(pk, m2, s) {

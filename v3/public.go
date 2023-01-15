@@ -22,6 +22,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/sha512"
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -44,10 +45,7 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) ([]byte, error) {
 	pk := elliptic.MarshalCompressed(elliptic.P384(), sk.X, sk.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to prepare protected content: %w", err)
-	}
+	m2 := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, f, i)
 
 	// Compute SHA-384 digest
 	digest := sha512.Sum384(m2)
@@ -55,30 +53,31 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) ([]byte, error) {
 	// Sign using a determistic ECDSA scheme
 	r, s := rfc6979.SignECDSA(sk, digest[:], sha512.New384)
 
-	// Assemble signature
-	sig := append(r.Bytes(), s.Bytes()...)
-
 	// Prepare content
-	body := append([]byte{}, m...)
-	body = append(body, sig...)
+	body := make([]byte, 0, len(m)+r.BitLen()/8+s.BitLen()/8)
+	body = append(body, m...)
+	body = append(body, r.Bytes()...)
+	body = append(body, s.Bytes()...)
 
 	// Encode body as RawURLBase64
-	encodedBody := make([]byte, base64.RawURLEncoding.EncodedLen(len(body)))
-	base64.RawURLEncoding.Encode(encodedBody, body)
+	tokenLen := base64.RawURLEncoding.EncodedLen(len(body))
+	footerLen := base64.RawURLEncoding.EncodedLen(len(f)) + 1
+	if len(f) > 0 {
+		tokenLen += base64.RawURLEncoding.EncodedLen(len(f)) + 1
+	}
+
+	final := make([]byte, tokenLen)
+	base64.RawURLEncoding.Encode(final, body)
 
 	// Assemble final token
-	final := append([]byte(PublicPrefix), encodedBody...)
 	if len(f) > 0 {
+		final[tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
-		base64.RawURLEncoding.Encode(encodedFooter, f)
-
-		// Assemble body and footer
-		final = append(final, append([]byte("."), encodedFooter...)...)
+		base64.RawURLEncoding.Encode(final[tokenLen-footerLen+1:], []byte(f))
 	}
 
 	// No error
-	return final, nil
+	return append([]byte(PublicPrefix), final...), nil
 }
 
 // PASETO v3 signature verification primitive.
@@ -100,24 +99,24 @@ func Verify(sm []byte, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 	// Check footer usage
 	if len(f) > 0 {
 		// Split the footer and the body
-		parts := bytes.SplitN(sm, []byte("."), 2)
-		if len(parts) != 2 {
+		footerIdx := bytes.Index(sm, []byte("."))
+		if footerIdx == 0 {
 			return nil, errors.New("paseto: invalid token, footer is missing but expected")
 		}
 
 		// Decode footer
-		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(parts[1])))
-		if _, err := base64.RawURLEncoding.Decode(footer, parts[1]); err != nil {
+		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(sm[footerIdx+1:])))
+		if _, err := base64.RawURLEncoding.Decode(footer, sm[footerIdx+1:]); err != nil {
 			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
 		}
 
 		// Compare footer
-		if !common.SecureCompare([]byte(f), footer) {
+		if subtle.ConstantTimeCompare(f, footer) == 0 {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
 		// Continue without footer
-		sm = parts[0]
+		sm = sm[:footerIdx]
 	}
 
 	// Decode token
@@ -134,10 +133,7 @@ func Verify(sm []byte, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 	pk := elliptic.MarshalCompressed(elliptic.P384(), pub.X, pub.Y)
 
 	// Compute protected content
-	m2, err := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
-	}
+	m2 := common.PreAuthenticationEncoding(pk, []byte(PublicPrefix), m, f, i)
 
 	// Compute SHA-384 digest
 	digest := sha512.Sum384(m2)

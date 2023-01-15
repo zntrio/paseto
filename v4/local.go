@@ -19,14 +19,13 @@ package v4
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 
 	"golang.org/x/crypto/chacha20"
-
-	"zntr.io/paseto/internal/common"
 )
 
 // GenerateLocalKey generates a key for local encryption.
@@ -100,22 +99,24 @@ func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) ([]byte, error) {
 	body = append(body, t...)
 
 	// Encode body as RawURLBase64
-	encodedBody := make([]byte, base64.RawURLEncoding.EncodedLen(len(body)))
-	base64.RawURLEncoding.Encode(encodedBody, body)
+	tokenLen := base64.RawURLEncoding.EncodedLen(len(body))
+	footerLen := base64.RawURLEncoding.EncodedLen(len(f)) + 1
+	if len(f) > 0 {
+		tokenLen += base64.RawURLEncoding.EncodedLen(len(f)) + 1
+	}
+
+	final := make([]byte, tokenLen)
+	base64.RawURLEncoding.Encode(final, body)
 
 	// Assemble final token
-	final := append([]byte(LocalPrefix), encodedBody...)
 	if len(f) > 0 {
+		final[tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
-		base64.RawURLEncoding.Encode(encodedFooter, []byte(f))
-
-		// Assemble body and footer
-		final = append(final, append([]byte("."), encodedFooter...)...)
+		base64.RawURLEncoding.Encode(final[tokenLen-footerLen+1:], []byte(f))
 	}
 
 	// No error
-	return final, nil
+	return append([]byte(LocalPrefix), final...), nil
 }
 
 // PASETO v4 symmetric decryption primitive
@@ -143,24 +144,24 @@ func Decrypt(key *LocalKey, input, f, i []byte) ([]byte, error) {
 	// Check footer usage
 	if len(f) > 0 {
 		// Split the footer and the body
-		parts := bytes.SplitN(input, []byte("."), 2)
-		if len(parts) != 2 {
+		footerIdx := bytes.Index(input, []byte("."))
+		if footerIdx == 0 {
 			return nil, errors.New("paseto: invalid token, footer is missing but expected")
 		}
 
 		// Decode footer
-		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(parts[1])))
-		if _, err := base64.RawURLEncoding.Decode(footer, parts[1]); err != nil {
+		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(input[footerIdx+1:])))
+		if _, err := base64.RawURLEncoding.Decode(footer, input[footerIdx+1:]); err != nil {
 			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
 		}
 
 		// Compare footer
-		if !common.SecureCompare([]byte(f), footer) {
+		if subtle.ConstantTimeCompare(f, footer) == 0 {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
 		// Continue without footer
-		input = parts[0]
+		input = input[:footerIdx]
 	}
 
 	// Decode token
@@ -187,7 +188,7 @@ func Decrypt(key *LocalKey, input, f, i []byte) ([]byte, error) {
 	}
 
 	// Time-constant compare MAC
-	if !common.SecureCompare(t, t2) {
+	if subtle.ConstantTimeCompare(t, t2) == 0 {
 		return nil, errors.New("paseto: invalid pre-authentication header")
 	}
 

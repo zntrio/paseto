@@ -18,15 +18,11 @@
 package common
 
 import (
-	"bytes"
-	"crypto/subtle"
 	"encoding/binary"
 )
 
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Common.md#authentication-padding
-func PreAuthenticationEncoding(pieces ...[]byte) ([]byte, error) {
-	output := &bytes.Buffer{}
-
+func PreAuthenticationEncoding(pieces ...[]byte) []byte {
 	// Precompute length to allocate the buffer
 	// PieceCount (8B) || ( PieceLen (8B) || Piece (*B) )*
 	bufLen := 8
@@ -35,40 +31,23 @@ func PreAuthenticationEncoding(pieces ...[]byte) ([]byte, error) {
 	}
 
 	// Pre-allocate the buffer
-	output.Grow(bufLen)
+	output := make([]byte, bufLen)
 
 	// Encode piece count
-	count := len(pieces)
-	if err := binary.Write(output, binary.LittleEndian, uint64(count)); err != nil {
-		return nil, err
-	}
+	binary.LittleEndian.PutUint64(output, uint64(len(pieces)))
 
+	offset := 8
 	// For each element
 	for i := range pieces {
 		// Encode size
-		if err := binary.Write(output, binary.LittleEndian, uint64(len(pieces[i]))); err != nil {
-			return nil, err
-		}
+		binary.LittleEndian.PutUint64(output[offset:], uint64(len(pieces[i])))
+		offset += 8
 
 		// Encode data
-		if _, err := output.Write(pieces[i]); err != nil {
-			return nil, err
-		}
+		copy(output[offset:], pieces[i])
+		offset += len(pieces[i])
 	}
 
 	// No error
-	return output.Bytes(), nil
-}
-
-// SecureCompare use constant time function to compare the two given array.
-func SecureCompare(given, actual []byte) bool {
-	if subtle.ConstantTimeEq(int32(len(given)), int32(len(actual))) == 1 {
-		return subtle.ConstantTimeCompare(given, actual) == 1
-	}
-	// Securely compare actual to itself to keep constant time, but always return false
-	if subtle.ConstantTimeCompare(actual, actual) == 1 {
-		return false
-	}
-
-	return false
+	return output
 }

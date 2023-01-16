@@ -114,7 +114,7 @@ func ExamplePasetoV4LocalDecrypt() {
 	}
 
 	// Encrypted token.
-	input := []byte("v4.local.dGVzdHMtMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTZ-qF7cj1LApZxpU5R2qdaX9Ox9NaKxnci6ObPVawSbAlqcRdmSDrklvbUqNGk61-tuOKJ0vkFQ.eyJraWQiOiIxMjM0NTY3ODkwIn0")
+	input := "v4.local.dGVzdHMtMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTZ-qF7cj1LApZxpU5R2qdaX9Ox9NaKxnci6ObPVawSbAlqcRdmSDrklvbUqNGk61-tuOKJ0vkFQ.eyJraWQiOiIxMjM0NTY3ODkwIn0"
 
 	// Expected footer value.
 	footer := []byte(`{"kid":"1234567890"}`)
@@ -169,7 +169,7 @@ func ExamplePasetoV4PublicVerify() {
 	}
 
 	// Prepare the message
-	input := []byte("v4.public.bXkgc3VwZXIgc2VjcmV0IG1lc3NhZ2UbOO-zu6XQbbhmDj0IUEjrmLS_TK1vM69D3pmdbUJmSa7A4c0qjEi9q-DQiMD6UUtbGEMXA1z9zdRskpGfStQH.eyJraWQiOiIxMjM0NTY3ODkwIn0")
+	input := "v4.public.bXkgc3VwZXIgc2VjcmV0IG1lc3NhZ2UbOO-zu6XQbbhmDj0IUEjrmLS_TK1vM69D3pmdbUJmSa7A4c0qjEi9q-DQiMD6UUtbGEMXA1z9zdRskpGfStQH.eyJraWQiOiIxMjM0NTY3ODkwIn0"
 	footer := []byte(`{"kid":"1234567890"}`)
 	assertions := []byte(`{"user_id":"1234567890"}`)
 

@@ -56,12 +56,12 @@ More examples - [here](example_test.go)
 goos: darwin
 goarch: arm64
 pkg: zntr.io/paseto/v3
-Benchmark_Paseto_Encrypt-10    	   74648	     14735 ns/op	    8288 B/op	      60 allocs/op
-Benchmark_Paseto_Decrypt-10    	   84492	     14211 ns/op	    7762 B/op	      58 allocs/op
-Benchmark_Paseto_Sign-10       	    7495	    157311 ns/op	    9076 B/op	      87 allocs/op
-Benchmark_Paseto_Verify-10     	    1976	    604464 ns/op	    3433 B/op	      51 allocs/op
+Benchmark_Paseto_Encrypt-10    	   74833	     14775 ns/op	    8274 B/op	      59 allocs/op
+Benchmark_Paseto_Decrypt-10    	   84738	     14189 ns/op	    8050 B/op	      59 allocs/op
+Benchmark_Paseto_Sign-10       	    7467	    157376 ns/op	    9059 B/op	      86 allocs/op
+Benchmark_Paseto_Verify-10     	    1980	    604653 ns/op	    3754 B/op	      52 allocs/op
 PASS
-ok  	zntr.io/paseto/v3	5.335s
+ok  	zntr.io/paseto/v3	5.373s
 ```
 
 ### V4
@@ -71,12 +71,12 @@ ok  	zntr.io/paseto/v3	5.335s
 goos: darwin
 goarch: arm64
 pkg: zntr.io/paseto/v4
-Benchmark_Paseto_Encrypt-10    	  461188	      2567 ns/op	    2272 B/op	      13 allocs/op
-Benchmark_Paseto_Decrypt-10    	  570516	      2086 ns/op	    1776 B/op	      11 allocs/op
-Benchmark_Paseto_Sign-10       	   48141	     24877 ns/op	     912 B/op	       5 allocs/op
-Benchmark_Paseto_Verify-10     	   22591	     52607 ns/op	     416 B/op	       3 allocs/op
+Benchmark_Paseto_Encrypt-10    	  461580	      2580 ns/op	    2288 B/op	      12 allocs/op
+Benchmark_Paseto_Decrypt-10    	  554426	      2139 ns/op	    2064 B/op	      12 allocs/op
+Benchmark_Paseto_Sign-10       	   47422	     24875 ns/op	     928 B/op	       4 allocs/op
+Benchmark_Paseto_Verify-10     	   22990	     52357 ns/op	     704 B/op	       4 allocs/op
 PASS
-ok  	zntr.io/paseto/v4	6.588s
+ok  	zntr.io/paseto/v4	6.660s
 ```
 
 ## License

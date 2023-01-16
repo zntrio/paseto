@@ -154,7 +154,7 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			assert.Equal(t, testCase.token, string(token))
 
 			// Decrypt
-			message, err := Decrypt(key, []byte(testCase.token), testCase.footer, testCase.implicitAssertion)
+			message, err := Decrypt(key, testCase.token, testCase.footer, testCase.implicitAssertion)
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the decrypt call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -217,9 +217,9 @@ func Benchmark_Paseto_Encrypt(b *testing.B) {
 	benchmarkEncrypt(&key, m, f, i, b)
 }
 
-func benchmarkDecrypt(key *LocalKey, m, f, i []byte, b *testing.B) {
+func benchmarkDecrypt(key *LocalKey, t string, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, err := Decrypt(key, m, f, i)
+		_, err := Decrypt(key, t, f, i)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -232,12 +232,12 @@ func Benchmark_Paseto_Decrypt(b *testing.B) {
 	assert.NoError(b, err)
 	key := LocalKey(keyRaw)
 
-	m := []byte("v3.local.JvdVM1RIKh2R1HhGJ4VLjaa4BCp5ZlI8K0BOjbvn9_LwY78vQnDait-Q-sjhF88dG2B0X-4P3EcxGHn8wzPbTrqObHhyoKpjy3cwZQzLdiwRsdEK5SDvl02_HjWKJW2oqGMOQJmZHSSKYR6AnPYJV6gpHtx6dLakIG_AOPhu8vKexNyrv5_1qoom6_NaPGecoiz6fR8.eyJraWQiOiJVYmtLOFk2aXY0R1poRnA2VHgzSVdMV0xmTlhTRXZKY2RUM3pkUjY1WVp4byJ9")
+	t := "v3.local.JvdVM1RIKh2R1HhGJ4VLjaa4BCp5ZlI8K0BOjbvn9_LwY78vQnDait-Q-sjhF88dG2B0X-4P3EcxGHn8wzPbTrqObHhyoKpjy3cwZQzLdiwRsdEK5SDvl02_HjWKJW2oqGMOQJmZHSSKYR6AnPYJV6gpHtx6dLakIG_AOPhu8vKexNyrv5_1qoom6_NaPGecoiz6fR8.eyJraWQiOiJVYmtLOFk2aXY0R1poRnA2VHgzSVdMV0xmTlhTRXZKY2RUM3pkUjY1WVp4byJ9"
 	f := []byte("{\"kid\":\"UbkK8Y6iv4GZhFp6Tx3IWLWLfNXSEvJcdT3zdR65YZxo\"}")
 	i := []byte("{\"test-vector\":\"3-E-8\"}")
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	benchmarkDecrypt(&key, m, f, i, b)
+	benchmarkDecrypt(&key, t, f, i, b)
 }

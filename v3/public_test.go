@@ -97,7 +97,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, testCase.token, string(token))
 
 			// Verify
-			message, err := Verify([]byte(testCase.token), &sk.PublicKey, []byte(testCase.footer), []byte(testCase.implicitAssertion))
+			message, err := Verify(testCase.token, &sk.PublicKey, []byte(testCase.footer), []byte(testCase.implicitAssertion))
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the verify call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -134,9 +134,9 @@ func Benchmark_Paseto_Sign(b *testing.B) {
 	benchmarkSign(m, &sk, f, i, b)
 }
 
-func benchmarkVerify(m []byte, pk *ecdsa.PublicKey, f, i []byte, b *testing.B) {
+func benchmarkVerify(t string, pk *ecdsa.PublicKey, f, i []byte, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		_, err := Verify(m, pk, f, i)
+		_, err := Verify(t, pk, f, i)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -149,7 +149,7 @@ func Benchmark_Paseto_Verify(b *testing.B) {
 	sk.PublicKey.Curve = elliptic.P384()
 	sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
 
-	token := []byte("v3.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ94SjWIbjmS7715GjLSnHnpJrC9Z-cnwK45dmvnVvCRQDCCKAXaKEopTajX0DKYx1Xqr6gcTdfqscLCAbiB4eOW9jlt-oNqdG8TjsYEi6aloBfTzF1DXff_45tFlnBukEX.eyJraWQiOiJkWWtJU3lseFFlZWNFY0hFTGZ6Rjg4VVpyd2JMb2xOaUNkcHpVSEd3OVVxbiJ9")
+	token := "v3.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ94SjWIbjmS7715GjLSnHnpJrC9Z-cnwK45dmvnVvCRQDCCKAXaKEopTajX0DKYx1Xqr6gcTdfqscLCAbiB4eOW9jlt-oNqdG8TjsYEi6aloBfTzF1DXff_45tFlnBukEX.eyJraWQiOiJkWWtJU3lseFFlZWNFY0hFTGZ6Rjg4VVpyd2JMb2xOaUNkcHpVSEd3OVVxbiJ9"
 	f := []byte("{\"kid\":\"dYkISylxQeecEcHELfzF88UZrwbLolNiCdpzUHGw9Uqn\"}")
 	i := []byte("{\"test-vector\":\"3-S-3\"}")
 

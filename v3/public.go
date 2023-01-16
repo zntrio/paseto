@@ -35,10 +35,10 @@ import (
 // Sign a message (m) with the private key (sk).
 // PASETO v3 public signature primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#sign
-func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) ([]byte, error) {
+func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) (string, error) {
 	// Check arguments
 	if sk == nil {
-		return nil, errors.New("paseto: unable to sign with a nil private key")
+		return "", errors.New("paseto: unable to sign with a nil private key")
 	}
 
 	// Compress public key point
@@ -66,47 +66,50 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) ([]byte, error) {
 		tokenLen += base64.RawURLEncoding.EncodedLen(len(f)) + 1
 	}
 
-	final := make([]byte, tokenLen)
-	base64.RawURLEncoding.Encode(final, body)
+	final := make([]byte, 10+tokenLen)
+	copy(final, []byte(PublicPrefix))
+	base64.RawURLEncoding.Encode(final[10:], body)
 
 	// Assemble final token
 	if len(f) > 0 {
-		final[tokenLen-footerLen] = '.'
+		final[10+tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		base64.RawURLEncoding.Encode(final[tokenLen-footerLen+1:], []byte(f))
+		base64.RawURLEncoding.Encode(final[10+tokenLen-footerLen+1:], []byte(f))
 	}
 
 	// No error
-	return append([]byte(PublicPrefix), final...), nil
+	return string(final), nil
 }
 
 // PASETO v3 signature verification primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#verify
-func Verify(sm []byte, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
+func Verify(t string, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 	// Check arguments
 	if pub == nil {
 		return nil, errors.New("paseto: public key is nil")
 	}
 
+	rawToken := []byte(t)
+
 	// Check token header
-	if !bytes.HasPrefix(sm, []byte(PublicPrefix)) {
+	if !bytes.HasPrefix(rawToken, []byte(PublicPrefix)) {
 		return nil, errors.New("paseto: invalid token")
 	}
 
 	// Trim prefix
-	sm = sm[len(PublicPrefix):]
+	rawToken = rawToken[len(PublicPrefix):]
 
 	// Check footer usage
 	if len(f) > 0 {
 		// Split the footer and the body
-		footerIdx := bytes.Index(sm, []byte("."))
+		footerIdx := bytes.Index(rawToken, []byte("."))
 		if footerIdx == 0 {
 			return nil, errors.New("paseto: invalid token, footer is missing but expected")
 		}
 
 		// Decode footer
-		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(sm[footerIdx+1:])))
-		if _, err := base64.RawURLEncoding.Decode(footer, sm[footerIdx+1:]); err != nil {
+		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(rawToken[footerIdx+1:])))
+		if _, err := base64.RawURLEncoding.Decode(footer, rawToken[footerIdx+1:]); err != nil {
 			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
 		}
 
@@ -116,12 +119,12 @@ func Verify(sm []byte, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 		}
 
 		// Continue without footer
-		sm = sm[:footerIdx]
+		rawToken = rawToken[:footerIdx]
 	}
 
 	// Decode token
-	raw := make([]byte, base64.RawURLEncoding.DecodedLen(len(sm)))
-	if _, err := base64.RawURLEncoding.Decode(raw, sm); err != nil {
+	raw := make([]byte, base64.RawURLEncoding.DecodedLen(len(rawToken)))
+	if _, err := base64.RawURLEncoding.Decode(raw, rawToken); err != nil {
 		return nil, fmt.Errorf("paseto: invalid token body: %w", err)
 	}
 

@@ -81,7 +81,7 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) (string, error) {
 	return string(final), nil
 }
 
-// PASETO v3 signature verification primitive.
+// Verify PASETO v3 signature.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#verify
 func Verify(t string, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 	// Check arguments

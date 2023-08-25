@@ -86,7 +86,8 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			var sk ecdsa.PrivateKey
 			sk.D, _ = new(big.Int).SetString(testCase.secretKey, 16)
 			sk.PublicKey.Curve = elliptic.P384()
-			sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
+			pubRaw, _ := new(big.Int).SetString(testCase.publicKey, 16)
+			sk.X, sk.Y = elliptic.UnmarshalCompressed(sk.PublicKey.Curve, pubRaw.Bytes())
 
 			// Sign
 			token, err := Sign([]byte(testCase.payload), &sk, []byte(testCase.footer), []byte(testCase.implicitAssertion))
@@ -121,8 +122,9 @@ func benchmarkSign(m []byte, sk *ecdsa.PrivateKey, f, i []byte, b *testing.B) {
 func Benchmark_Paseto_Sign(b *testing.B) {
 	var sk ecdsa.PrivateKey
 	sk.D, _ = new(big.Int).SetString("20347609607477aca8fbfbc5e6218455f3199669792ef8b466faa87bdc67798144c848dd03661eed5ac62461340cea96", 16)
-	sk.PublicKey.Curve = elliptic.P384()
-	sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
+	sk.Curve = elliptic.P384()
+	pubRaw, _ := new(big.Int).SetString("02fbcb7c69ee1c60579be7a334134878d9c5c5bf35d552dab63c0140397ed14cef637d7720925c44699ea30e72874c72fb", 16)
+	sk.X, sk.Y = elliptic.UnmarshalCompressed(sk.PublicKey.Curve, pubRaw.Bytes())
 
 	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
 	f := []byte("{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}")
@@ -146,8 +148,9 @@ func benchmarkVerify(t string, pk *ecdsa.PublicKey, f, i []byte, b *testing.B) {
 func Benchmark_Paseto_Verify(b *testing.B) {
 	var sk ecdsa.PrivateKey
 	sk.D, _ = new(big.Int).SetString("20347609607477aca8fbfbc5e6218455f3199669792ef8b466faa87bdc67798144c848dd03661eed5ac62461340cea96", 16)
+	pubRaw, _ := new(big.Int).SetString("02fbcb7c69ee1c60579be7a334134878d9c5c5bf35d552dab63c0140397ed14cef637d7720925c44699ea30e72874c72fb", 16)
 	sk.PublicKey.Curve = elliptic.P384()
-	sk.PublicKey.X, sk.PublicKey.Y = sk.PublicKey.Curve.ScalarBaseMult(sk.D.Bytes())
+	sk.PublicKey.X, sk.PublicKey.Y = elliptic.UnmarshalCompressed(sk.PublicKey.Curve, pubRaw.Bytes())
 
 	token := "v3.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ94SjWIbjmS7715GjLSnHnpJrC9Z-cnwK45dmvnVvCRQDCCKAXaKEopTajX0DKYx1Xqr6gcTdfqscLCAbiB4eOW9jlt-oNqdG8TjsYEi6aloBfTzF1DXff_45tFlnBukEX.eyJraWQiOiJkWWtJU3lseFFlZWNFY0hFTGZ6Rjg4VVpyd2JMb2xOaUNkcHpVSEd3OVVxbiJ9"
 	f := []byte("{\"kid\":\"dYkISylxQeecEcHELfzF88UZrwbLolNiCdpzUHGw9Uqn\"}")

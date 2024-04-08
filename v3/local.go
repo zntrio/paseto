@@ -90,10 +90,7 @@ func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) (string, error) {
 	ciph.XORKeyStream(body[nonceLength:], m)
 
 	// Compute MAC
-	t, err := mac(ak, []byte(LocalPrefix), body[:nonceLength], body[nonceLength:], f, i)
-	if err != nil {
-		return "", fmt.Errorf("paseto: unable to compute MAC: %w", err)
-	}
+	t := mac(ak, []byte(LocalPrefix), body[:nonceLength], body[nonceLength:], f, i)
 
 	// Serialize final token
 	// h || base64url(n || c || t)
@@ -107,7 +104,7 @@ func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) (string, error) {
 	}
 
 	final := make([]byte, 9+tokenLen)
-	copy(final, []byte(LocalPrefix))
+	copy(final, LocalPrefix)
 	base64.RawURLEncoding.Encode(final[9:], body)
 
 	// Assemble final token
@@ -186,10 +183,7 @@ func Decrypt(key *LocalKey, token string, f, i []byte) ([]byte, error) {
 	}
 
 	// Compute MAC
-	t2, err := mac(ak, []byte(LocalPrefix), n, c, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
-	}
+	t2 := mac(ak, []byte(LocalPrefix), n, c, f, i)
 
 	// Time-constant compare MAC
 	if subtle.ConstantTimeCompare(t, t2) == 0 {

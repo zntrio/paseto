@@ -52,7 +52,7 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-1.21-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.golang }}-
+            ${{ runner.os }}-go-
       - name: Setup gotestsum
         uses: autero1/action-gotestsum@v2.0.0
         with:
@@ -74,7 +74,7 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-1.21-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.golang }}-
+            ${{ runner.os }}-go-
       - name: Setup gotestsum
         uses: autero1/action-gotestsum@v2.0.0
         with:
@@ -96,7 +96,7 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-1.21-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.golang }}-
+            ${{ runner.os }}-go-
       - name: Setup gotestsum
         uses: autero1/action-gotestsum@v2.0.0
         with:

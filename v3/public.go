@@ -67,14 +67,14 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) (string, error) {
 	}
 
 	final := make([]byte, 10+tokenLen)
-	copy(final, []byte(PublicPrefix))
+	copy(final, PublicPrefix)
 	base64.RawURLEncoding.Encode(final[10:], body)
 
 	// Assemble final token
 	if len(f) > 0 {
 		final[10+tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		base64.RawURLEncoding.Encode(final[10+tokenLen-footerLen+1:], []byte(f))
+		base64.RawURLEncoding.Encode(final[10+tokenLen-footerLen+1:], f)
 	}
 
 	// No error

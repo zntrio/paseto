@@ -67,21 +67,21 @@ func Sign(m []byte, sk *ecdsa.PrivateKey, f, i []byte) (string, error) {
 	}
 
 	final := make([]byte, 10+tokenLen)
-	copy(final, []byte(PublicPrefix))
+	copy(final, PublicPrefix)
 	base64.RawURLEncoding.Encode(final[10:], body)
 
 	// Assemble final token
 	if len(f) > 0 {
 		final[10+tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		base64.RawURLEncoding.Encode(final[10+tokenLen-footerLen+1:], []byte(f))
+		base64.RawURLEncoding.Encode(final[10+tokenLen-footerLen+1:], f)
 	}
 
 	// No error
 	return string(final), nil
 }
 
-// PASETO v3 signature verification primitive.
+// Verify PASETO v3 signature.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version3.md#verify
 func Verify(t string, pub *ecdsa.PublicKey, f, i []byte) ([]byte, error) {
 	// Check arguments

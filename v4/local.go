@@ -116,7 +116,7 @@ func Encrypt(r io.Reader, key *LocalKey, m, f, i []byte) (string, error) {
 	if len(f) > 0 {
 		final[9+tokenLen-footerLen] = '.'
 		// Encode footer as RawURLBase64
-		base64.RawURLEncoding.Encode(final[9+tokenLen-footerLen+1:], []byte(f))
+		base64.RawURLEncoding.Encode(final[9+tokenLen-footerLen+1:], f)
 	}
 
 	// No error

@@ -4,7 +4,7 @@ with pkgs;
 
 mkShell {
   buildInputs = [
-    go_1_18
+    go_1_21
     gotools
     gopls
     go-outline

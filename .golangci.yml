@@ -1,14 +1,14 @@
 run:
   timeout: 5m
   tests: false
-  skip-files:
+
+issues:
+  exclude-files:
     - "testing.go"
     - ".*\\.pb\\.go"
     - ".*\\.gen\\.go"
 
 linters-settings:
-  golint:
-    min-confidence: 0
   goconst:
     min-len: 5
     min-occurrences: 4

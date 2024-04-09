@@ -58,7 +58,7 @@ func SignECDSA(priv *ecdsa.PrivateKey, digest []byte, alg func() hash.Hash) (r, 
 	return
 }
 
-// copied from crypto/ecdsa
+// copied from crypto/ecdsa.
 func hashToInt(digest []byte, c elliptic.Curve) *big.Int {
 	orderBits := c.Params().N.BitLen()
 	orderBytes := (orderBits + 7) / 8

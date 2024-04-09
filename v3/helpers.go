@@ -63,7 +63,7 @@ func kdf(key *LocalKey, n []byte) (ek, n2, ak []byte, err error) {
 
 func mac(ak, h, n, c, f, i []byte) []byte {
 	// Compute pre-authentication message
-	preAuth := common.PreAuthenticationEncoding([]byte(h), n, c, f, i)
+	preAuth := common.PreAuthenticationEncoding(h, n, c, f, i)
 
 	// Compute MAC
 	mac := hmac.New(sha512.New384, ak)

@@ -47,7 +47,7 @@ More examples - [here](example_test.go)
 
 ## Benchmarks
 
-> Go version 1.21 / Mac M1
+> Go version 1.23.1 / Mac M1
 
 ### V3
 
@@ -56,12 +56,13 @@ More examples - [here](example_test.go)
 goos: darwin
 goarch: arm64
 pkg: zntr.io/paseto/v3
-Benchmark_Paseto_Encrypt-10    	  200414	      6050 ns/op	    8274 B/op	      59 allocs/op
-Benchmark_Paseto_Decrypt-10    	  214208	      5558 ns/op	    8050 B/op	      59 allocs/op
-Benchmark_Paseto_Sign-10       	    9921	    117440 ns/op	    9060 B/op	      86 allocs/op
-Benchmark_Paseto_Verify-10     	    2373	    504017 ns/op	    2504 B/op	      36 allocs/op
+cpu: Apple M1 Pro
+Benchmark_Paseto_Encrypt-10    	  213638	      5511 ns/op	    7378 B/op	      52 allocs/op
+Benchmark_Paseto_Decrypt-10    	  226226	      5268 ns/op	    7154 B/op	      52 allocs/op
+Benchmark_Paseto_Sign-10       	   10000	    124865 ns/op	    9060 B/op	      86 allocs/op
+Benchmark_Paseto_Verify-10     	    2292	    536478 ns/op	    2504 B/op	      36 allocs/op
 PASS
-ok  	zntr.io/paseto/v3	6.169s
+ok  	zntr.io/paseto/v3	6.052s
 ```
 
 ### V4
@@ -71,12 +72,30 @@ ok  	zntr.io/paseto/v3	6.169s
 goos: darwin
 goarch: arm64
 pkg: zntr.io/paseto/v4
-Benchmark_Paseto_Encrypt-10    	  411024	      2532 ns/op	    2288 B/op	      12 allocs/op
-Benchmark_Paseto_Decrypt-10    	  567030	      2092 ns/op	    2064 B/op	      12 allocs/op
-Benchmark_Paseto_Sign-10       	   51487	     23268 ns/op	     928 B/op	       4 allocs/op
-Benchmark_Paseto_Verify-10     	   23076	     51794 ns/op	     704 B/op	       4 allocs/op
+cpu: Apple M1 Pro
+Benchmark_Paseto_Encrypt-10    	  511538	      2397 ns/op	    2288 B/op	      12 allocs/op
+Benchmark_Paseto_Decrypt-10    	  528723	      2260 ns/op	    2064 B/op	      12 allocs/op
+Benchmark_Paseto_Sign-10       	   51476	     24680 ns/op	     928 B/op	       4 allocs/op
+Benchmark_Paseto_Verify-10     	   22828	     52875 ns/op	     704 B/op	       4 allocs/op
 PASS
-ok  	zntr.io/paseto/v4	5.825s
+ok  	zntr.io/paseto/v4	7.119s
+```
+
+### V4X (XCHACHA20-BLAKE3) - Non standard
+
+> This is a non-standard version of PASETO using XCHACHA20-BLAKE3 instead of XCHACHA20-POLY1305.
+> https://kerkour.com/chacha20-blake3/
+
+```sh
+❯ go test -bench=. -test.benchtime=1s
+goos: darwin
+goarch: arm64
+pkg: zntr.io/paseto/v4x
+cpu: Apple M1 Pro
+Benchmark_Paseto_Encrypt-10    	  496018	      2336 ns/op	    1056 B/op	       6 allocs/op
+Benchmark_Paseto_Decrypt-10    	  531135	      2314 ns/op	     832 B/op	       6 allocs/op
+PASS
+ok  	zntr.io/paseto/v4x	2.832s
 ```
 
 ## License
@@ -88,3 +107,4 @@ All artifacts and source code are released under [Apache 2.0 Software License](L
 - <https://developer.okta.com/blog/2019/10/17/a-thorough-introduction-to-paseto>
 - <https://dev.to/techschoolguru/why-paseto-is-better-than-jwt-for-token-based-authentication-1b0c>
 - <https://paragonie.com/blog/2021/08/paseto-is-even-more-secure-alternative-jose-standards-jwt-etc>
+- <https://kerkour.com/chacha20-blake3>
